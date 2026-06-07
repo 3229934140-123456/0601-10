@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 智能助手</title>
+  <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo">
+        <span class="logo-icon">🤖</span>
+        <span class="logo-text">AI 智能助手</span>
+      </div>
+      <div class="header-actions">
+        <div class="usage-badge" id="usage-badge" title="今日使用额度">
+          <span class="usage-icon">⚡</span>
+          <span class="usage-count" id="usage-count">0</span>
+          <span class="usage-total">/ 100</span>
+        </div>
+        <button class="icon-btn" id="settings-btn" title="设置">⚙️</button>
+      </div>
+    </header>
+
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="home" title="首页">
+        <span class="tab-icon">🏠</span>
+        <span class="tab-label">首页</span>
+      </button>
+      <button class="nav-tab" data-tab="prompt" title="提示词库">
+        <span class="tab-icon">📚</span>
+        <span class="tab-label">提示词库</span>
+      </button>
+      <button class="nav-tab" data-tab="summary" title="网页摘要">
+        <span class="tab-icon">📄</span>
+        <span class="tab-label">网页摘要</span>
+      </button>
+      <button class="nav-tab" data-tab="batch" title="批处理">
+        <span class="tab-icon">📦</span>
+        <span class="tab-label">批处理</span>
+      </button>
+      <button class="nav-tab" data-tab="audit" title="审核记录">
+        <span class="tab-icon">📋</span>
+        <span class="tab-label">审核记录</span>
+      </button>
+      <button class="nav-tab" data-tab="history" title="历史回溯">
+        <span class="tab-icon">🕐</span>
+        <span class="tab-label">历史</span>
+      </button>
+    </nav>
+
+    <main class="main-content">
+      <section class="tab-content active" id="tab-home">
+        <div class="quick-actions">
+          <h3 class="section-title">快捷功能</h3>
+          <div class="action-grid">
+            <button class="action-card" data-action="rewrite">
+              <div class="action-icon">✍️</div>
+              <div class="action-name">文本改写</div>
+            </button>
+            <button class="action-card" data-action="tone">
+              <div class="action-icon">🎭</div>
+              <div class="action-name">语气转换</div>
+            </button>
+            <button class="action-card" data-action="summarize">
+              <div class="action-icon">📝</div>
+              <div class="action-name">长文摘要</div>
+            </button>
+            <button class="action-card" data-action="key_points">
+              <div class="action-icon">🎯</div>
+              <div class="action-name">要点提取</div>
+            </button>
+            <button class="action-card" data-action="reply">
+              <div class="action-icon">💬</div>
+              <div class="action-name">回复生成</div>
+            </button>
+            <button class="action-card" data-action="titles">
+              <div class="action-icon">📌</div>
+              <div class="action-name">标题备选</div>
+            </button>
+            <button class="action-card" data-action="sensitive">
+              <div class="action-icon">⚠️</div>
+              <div class="action-name">敏感词检测</div>
+            </button>
+            <button class="action-card" data-action="table_explain">
+              <div class="action-icon">📊</div>
+              <div class="action-name">表格解释</div>
+            </button>
+            <button class="action-card" data-action="translate">
+              <div class="action-icon">🌍</div>
+              <div class="action-name">多语言翻译</div>
+            </button>
+            <button class="action-card" data-action="ocr">
+              <div class="action-icon">📷</div>
+              <div class="action-name">截图识别</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="input-section">
+          <h3 class="section-title">
+            <span>输入文本</span>
+            <button class="text-sample-btn" id="paste-btn">📋 粘贴</button>
+          </h3>
+          <textarea 
+            class="input-textarea" 
+            id="input-textarea" 
+            placeholder="在这里输入或粘贴文本，然后选择上方的功能进行处理..."
+          ></textarea>
+          <div class="input-actions">
+            <button class="btn btn-primary" id="process-btn">开始处理</button>
+            <select class="action-select" id="action-select">
+              <option value="rewrite">文本改写</option>
+              <option value="tone_formal">正式语气</option>
+              <option value="tone_casual">轻松语气</option>
+              <option value="tone_professional">专业语气</option>
+              <option value="tone_humorous">幽默语气</option>
+              <option value="summarize">长文摘要</option>
+              <option value="key_points">要点提取</option>
+              <option value="reply">回复生成</option>
+              <option value="titles">标题备选</option>
+              <option value="sensitive">敏感词检测</option>
+              <option value="table_explain">表格解释</option>
+              <option value="translate_en">翻译成英文</option>
+              <option value="translate_ja">翻译成日文</option>
+              <option value="translate_ko">翻译成韩文</option>
+            </select>
+            <button class="btn btn-secondary" id="clear-btn">清空</button>
+          </div>
+        </div>
+
+        <div class="result-section" id="result-section" style="display:none;">
+          <h3 class="section-title">
+            <span>处理结果</span>
+            <div class="result-actions">
+              <button class="text-sample-btn" id="copy-result-btn">📋 复制</button>
+              <button class="text-sample-btn" id="compare-btn">📊 对比</button>
+              <button class="text-sample-btn" id="save-favorite-btn">⭐ 收藏</button>
+            </div>
+          </h3>
+          <div class="result-content" id="result-content"></div>
+          
+          <div class="compare-section" id="compare-section" style="display:none;">
+            <div class="compare-box">
+              <div class="compare-label">原文</div>
+              <div class="compare-text" id="compare-original"></div>
+            </div>
+            <div class="compare-divider">→</div>
+            <div class="compare-box">
+              <div class="compare-label">AI处理</div>
+              <div class="compare-text" id="compare-result"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="loading-section" id="loading-section" style="display:none;">
+          <div class="loading-spinner"></div>
+          <p>AI正在处理中，请稍候...</p>
+        </div>
+      </section>
+
+      <section class="tab-content" id="tab-prompt">
+        <div class="prompt-header">
+          <h3 class="section-title">提示词库</h3>
+          <div class="prompt-actions">
+            <input type="text" class="search-input" id="prompt-search" placeholder="搜索提示词...">
+            <button class="btn btn-primary btn-sm" id="add-prompt-btn">+ 新建</button>
+          </div>
+        </div>
+
+        <div class="prompt-categories">
+          <button class="category-tag active" data-category="all">全部</button>
+          <button class="category-tag" data-category="客服">客服</button>
+          <button class="category-tag" data-category="运营">运营</button>
+          <button class="category-tag" data-category="内容">内容</button>
+          <button class="category-tag" data-category="自定义">自定义</button>
+          <button class="category-tag" data-category="favorite">⭐ 收藏</button>
+        </div>
+
+        <div class="prompt-list" id="prompt-list"></div>
+
+        <div class="prompt-detail" id="prompt-detail" style="display:none;">
+          <div class="prompt-detail-header">
+            <h4 id="prompt-detail-title">提示词详情</h4>
+            <button class="icon-btn" id="close-prompt-detail">×</button>
+          </div>
+          <div class="prompt-detail-body">
+            <div class="form-group">
+              <label>名称</label>
+              <input type="text" id="prompt-name-input" class="form-input">
+            </div>
+            <div class="form-group">
+              <label>分类</label>
+              <select id="prompt-category-select" class="form-input">
+                <option value="客服">客服</option>
+                <option value="运营">运营</option>
+                <option value="内容">内容</option>
+                <option value="自定义">自定义</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>提示词内容</label>
+              <textarea id="prompt-content-input" class="form-textarea" rows="6"></textarea>
+              <small class="form-hint">使用 {{变量名}} 定义变量，例如 {{product_name}}</small>
+            </div>
+            <div class="form-group">
+              <label>变量填充</label>
+              <div id="prompt-variables" class="variables-container"></div>
+            </div>
+          </div>
+          <div class="prompt-detail-footer">
+            <button class="btn btn-secondary" id="delete-prompt-btn">删除</button>
+            <div>
+              <button class="btn btn-secondary" id="cancel-prompt-btn">取消</button>
+              <button class="btn btn-primary" id="save-prompt-btn">保存</button>
+              <button class="btn btn-primary" id="use-prompt-btn">使用</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-content" id="tab-summary">
+        <div class="summary-header">
+          <h3 class="section-title">网页摘要</h3>
+          <button class="btn btn-primary btn-sm" id="summarize-page-btn">📄 总结当前页面</button>
+        </div>
+        
+        <div class="summary-info" id="page-info">
+          <div class="info-item">
+            <span class="info-label">页面标题：</span>
+            <span class="info-value" id="page-title">暂无数据</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">字符数：</span>
+            <span class="info-value" id="page-length">-</span>
+          </div>
+        </div>
+
+        <div class="summary-options">
+          <h4>摘要选项</h4>
+          <div class="option-group">
+            <label>
+              <input type="radio" name="summary-type" value="brief" checked> 简短摘要
+            </label>
+            <label>
+              <input type="radio" name="summary-type" value="detailed"> 详细摘要
+            </label>
+            <label>
+              <input type="radio" name="summary-type" value="points"> 要点列表
+            </label>
+          </div>
+        </div>
+
+        <div class="summary-result" id="summary-result" style="display:none;">
+          <div class="result-header">
+            <h4>摘要结果</h4>
+            <button class="text-sample-btn" id="copy-summary-btn">📋 复制</button>
+          </div>
+          <div class="result-content" id="summary-content"></div>
+        </div>
+      </section>
+
+      <section class="tab-content" id="tab-batch">
+        <div class="batch-header">
+          <h3 class="section-title">批量处理</h3>
+          <div class="batch-tabs">
+            <button class="batch-tab active" data-batch-tab="text">文本批量</button>
+            <button class="batch-tab" data-batch-tab="tabs">标签页批量</button>
+          </div>
+        </div>
+
+        <div class="batch-content active" id="batch-text">
+          <div class="form-group">
+            <label>批量输入（每行一条，或用空行分隔）</label>
+            <textarea 
+              class="form-textarea" 
+              id="batch-input" 
+              rows="8"
+              placeholder="请输入需要批量处理的内容，每条占一行..."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>处理方式</label>
+            <select class="form-input" id="batch-action">
+              <option value="rewrite">文本改写</option>
+              <option value="translate">翻译成英文</option>
+              <option value="summarize">生成摘要</option>
+              <option value="titles">生成标题</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary btn-block" id="start-batch-btn">开始批量处理</button>
+
+          <div class="batch-progress" id="batch-progress" style="display:none;">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text" id="progress-text">0 / 0</div>
+          </div>
+
+          <div class="batch-results" id="batch-results" style="display:none;">
+            <h4>处理结果</h4>
+            <div class="batch-results-list" id="batch-results-list"></div>
+            <button class="btn btn-secondary btn-block" id="export-batch-btn">导出全部结果</button>
+          </div>
+        </div>
+
+        <div class="batch-content" id="batch-tabs">
+          <div class="tabs-list-header">
+            <h4>当前打开的标签页</h4>
+            <button class="text-sample-btn" id="select-all-tabs-btn">全选</button>
+          </div>
+          <div class="tabs-list" id="tabs-list"></div>
+          
+          <div class="form-group">
+            <label>处理方式</label>
+            <select class="form-input" id="tabs-batch-action">
+              <option value="summary">生成摘要</option>
+              <option value="key_points">提取要点</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary btn-block" id="start-tabs-batch-btn">批量处理选中标签页</button>
+        </div>
+      </section>
+
+      <section class="tab-content" id="tab-audit">
+        <div class="audit-header">
+          <h3 class="section-title">审核记录</h3>
+          <div class="audit-filters">
+            <select class="form-input form-input-sm" id="audit-filter">
+              <option value="all">全部类型</option>
+              <option value="sensitive">敏感词检测</option>
+              <option value="content">内容审核</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" id="export-audit-btn">导出</button>
+          </div>
+        </div>
+
+        <div class="audit-stats">
+          <div class="stat-card">
+            <div class="stat-value" id="audit-total">0</div>
+            <div class="stat-label">总审核数</div>
+          </div>
+          <div class="stat-card stat-warning">
+            <div class="stat-value" id="audit-warning">0</div>
+            <div class="stat-label">需关注</div>
+          </div>
+          <div class="stat-card stat-pass">
+            <div class="stat-value" id="audit-pass">0</div>
+            <div class="stat-label">通过</div>
+          </div>
+        </div>
+
+        <div class="audit-list" id="audit-list">
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <p>暂无审核记录</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-content" id="tab-history">
+        <div class="history-header">
+          <h3 class="section-title">历史记录</h3>
+          <button class="btn btn-secondary btn-sm" id="clear-history-btn">清空历史</button>
+        </div>
+        
+        <div class="history-list" id="history-list">
+          <div class="empty-state">
+            <div class="empty-icon">🕐</div>
+            <p>暂无历史记录</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-content" id="tab-settings" style="display:none;">
+        <div class="settings-header">
+          <h3 class="section-title">
+            <button class="icon-btn back-btn" id="back-from-settings">←</button>
+            设置
+          </h3>
+        </div>
+
+        <div class="settings-content">
+          <div class="settings-section">
+            <h4>🔑 API 配置</h4>
+            <div class="form-group">
+              <label>API Key</label>
+              <input type="password" class="form-input" id="setting-api-key" placeholder="请输入API密钥">
+            </div>
+            <div class="form-group">
+              <label>API 地址</label>
+              <input type="text" class="form-input" id="setting-api-endpoint" placeholder="https://api.openai.com/v1/chat/completions">
+            </div>
+            <div class="form-group">
+              <label>模型选择</label>
+              <select class="form-input" id="setting-model">
+                <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+                <option value="gpt-4">gpt-4</option>
+                <option value="gpt-4o">gpt-4o</option>
+                <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>温度 (0-1): <span id="temp-value">0.7</span></label>
+              <input type="range" class="form-range" id="setting-temperature" min="0" max="1" step="0.1" value="0.7">
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h4>📊 使用额度</h4>
+            <div class="usage-detail">
+              <div class="usage-item">
+                <span>今日使用</span>
+                <span id="usage-today">0 次</span>
+              </div>
+              <div class="usage-item">
+                <span>本月使用</span>
+                <span id="usage-month">0 次</span>
+              </div>
+              <div class="usage-item">
+                <span>累计使用</span>
+                <span id="usage-total-count">0 次</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>每日额度提醒</label>
+              <input type="number" class="form-input" id="setting-daily-quota" value="100">
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="setting-show-reminder" checked>
+                显示使用额度提醒
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h4>👥 团队共享</h4>
+            <div class="team-info">
+              <p>团队共享模板功能</p>
+              <button class="btn btn-secondary btn-sm" id="import-team-btn">导入团队模板</button>
+              <button class="btn btn-secondary btn-sm" id="export-team-btn">导出我的模板</button>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h4>🎨 界面设置</h4>
+            <div class="form-group">
+              <label>主题</label>
+              <select class="form-input" id="setting-theme">
+                <option value="light">浅色模式</option>
+                <option value="dark">深色模式</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="setting-auto-save" checked>
+                自动保存历史记录
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="setting-floating-menu" checked>
+                显示选中文本悬浮菜单
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h4>⌨️ 快捷键</h4>
+            <div class="shortcuts-list">
+              <div class="shortcut-item">
+                <span>打开侧边栏</span>
+                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>A</kbd>
+              </div>
+              <div class="shortcut-item">
+                <span>总结当前网页</span>
+                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-footer">
+            <button class="btn btn-primary" id="save-settings-btn">保存设置</button>
+            <button class="btn btn-secondary" id="reset-settings-btn">恢复默认</button>
+          </div>
+
+          <div class="about-section">
+            <p>AI 智能助手 v1.0.0</p>
+            <p class="about-desc">为客服、运营和内容编辑打造的AI效率工具</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="sidebar.js"></script>
+</body>
+</html>

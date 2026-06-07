@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 智能助手 - 安装指南</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      opacity: 0.9;
+      font-size: 16px;
+    }
+    
+    .header .logo {
+      font-size: 60px;
+      margin-bottom: 10px;
+    }
+    
+    .content {
+      padding: 40px;
+    }
+    
+    .section {
+      margin-bottom: 30px;
+    }
+    
+    .section h2 {
+      font-size: 20px;
+      margin-bottom: 15px;
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .section h2::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: #667eea;
+      border-radius: 2px;
+    }
+    
+    .steps {
+      list-style: none;
+      counter-reset: step;
+    }
+    
+    .steps li {
+      counter-increment: step;
+      padding: 12px 0 12px 50px;
+      position: relative;
+      line-height: 1.6;
+      color: #4b5563;
+    }
+    
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    
+    .feature-card {
+      background: #f9fafb;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    
+    .feature-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    
+    .feature-info h3 {
+      font-size: 14px;
+      margin-bottom: 4px;
+      color: #1f2937;
+    }
+    
+    .feature-info p {
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+    
+    code {
+      background: #f3f4f6;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 13px;
+      color: #dc2626;
+    }
+    
+    .tip {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    
+    .tip p {
+      color: #92400e;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .shortcut-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    
+    .shortcut-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .shortcut-name {
+      font-size: 13px;
+      color: #374151;
+    }
+    
+    .shortcut-keys {
+      display: flex;
+      gap: 4px;
+    }
+    
+    kbd {
+      background: white;
+      border: 1px solid #d1d5db;
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-family: 'SF Mono', Monaco, monospace;
+      color: #374151;
+    }
+    
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: #9ca3af;
+      font-size: 13px;
+      border-top: 1px solid #f3f4f6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">🤖</div>
+      <h1>AI 智能助手</h1>
+      <p>为客服、运营和内容编辑打造的AI效率工具</p>
+    </div>
+    
+    <div class="content">
+      <div class="section">
+        <h2>🚀 快速安装</h2>
+        <ol class="steps">
+          <li>生成图标：打开 <code>icons/generate-icons.html</code>，点击"下载所有图标"，将下载的三个图标放入 <code>icons/</code> 文件夹，分别命名为 <code>icon16.png</code>、<code>icon48.png</code>、<code>icon128.png</code></li>
+          <li>打开 Chrome 浏览器，在地址栏输入 <code>chrome://extensions/</code></li>
+          <li>开启右上角的「开发者模式」开关</li>
+          <li>点击左上角「加载已解压的扩展程序」按钮</li>
+          <li>选择本插件所在的文件夹</li>
+          <li>安装完成！点击浏览器工具栏中的插件图标即可使用</li>
+        </ol>
+      </div>
+      
+      <div class="section">
+        <h2>✨ 功能亮点</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">✍️</div>
+            <div class="feature-info">
+              <h3>文本改写</h3>
+              <p>智能优化文本表达，更清晰流畅</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎭</div>
+            <div class="feature-info">
+              <h3>语气转换</h3>
+              <p>正式/轻松/专业/幽默多种语气</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📝</div>
+            <div class="feature-info">
+              <h3>长文摘要</h3>
+              <p>一键提取文章核心内容</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <div class="feature-info">
+              <h3>要点提取</h3>
+              <p>快速获取关键信息点</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">💬</div>
+            <div class="feature-info">
+              <h3>回复生成</h3>
+              <p>智能生成客服/商务回复</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📌</div>
+            <div class="feature-info">
+              <h3>标题备选</h3>
+              <p>一键生成多个吸引人的标题</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚠️</div>
+            <div class="feature-info">
+              <h3>敏感词检测</h3>
+              <p>智能识别违规内容风险</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🌍</div>
+            <div class="feature-info">
+              <h3>多语言翻译</h3>
+              <p>支持英日韩法德西等多语言</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📚</div>
+            <div class="feature-info">
+              <h3>提示词库</h3>
+              <p>预置模板，支持变量填充</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📦</div>
+            <div class="feature-info">
+              <h3>批量处理</h3>
+              <p>支持文本批量和多标签页批量</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <div class="feature-info">
+              <h3>结果对比</h3>
+              <p>原文与AI结果并排对比</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">👥</div>
+            <div class="feature-info">
+              <h3>团队共享</h3>
+              <p>导入导出团队模板</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2>⌨️ 快捷键</h2>
+        <div class="shortcut-list">
+          <div class="shortcut-item">
+            <span class="shortcut-name">打开侧边栏</span>
+            <div class="shortcut-keys">
+              <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>A</kbd>
+            </div>
+          </div>
+          <div class="shortcut-item">
+            <span class="shortcut-name">总结当前网页</span>
+            <div class="shortcut-keys">
+              <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>S</kbd>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h2>⚙️ API 配置</h2>
+        <ol class="steps">
+          <li>点击插件右上角的「设置」按钮</li>
+          <li>在 API 配置中填入您的 API Key</li>
+          <li>选择合适的 AI 模型</li>
+          <li>设置每日使用额度提醒</li>
+          <li>点击「保存设置」即可</li>
+        </ol>
+        <div class="tip">
+          <p><strong>💡 提示：</strong>未配置 API Key 时，插件将使用演示模式，返回模拟结果用于体验功能。配置真实 API Key 后即可获得真实的 AI 服务响应。</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>AI 智能助手 v1.0.0 · 让工作更高效</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 智能助手</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="popup-header">
+      <div class="popup-logo">
+        <span class="logo-icon">🤖</span>
+        <span class="logo-text">AI 智能助手</span>
+      </div>
+      <div class="usage-mini">
+        <span id="popup-usage">0</span>
+        <span class="usage-label">次/今日</span>
+      </div>
+    </div>
+
+    <div class="quick-actions-popup">
+      <button class="quick-action-btn" data-action="sidebar">
+        <span class="action-emoji">📂</span>
+        <span>打开侧边栏</span>
+      </button>
+      <button class="quick-action-btn" data-action="summary">
+        <span class="action-emoji">📄</span>
+        <span>网页摘要</span>
+      </button>
+      <button class="quick-action-btn" data-action="prompt">
+        <span class="action-emoji">📚</span>
+        <span>提示词库</span>
+      </button>
+      <button class="quick-action-btn" data-action="batch">
+        <span class="action-emoji">📦</span>
+        <span>批处理</span>
+      </button>
+    </div>
+
+    <div class="popup-section">
+      <h4 class="section-h">常用功能</h4>
+      <div class="feature-list">
+        <button class="feature-item" data-feature="rewrite">
+          <span class="feature-icon">✍️</span>
+          <span>文本改写</span>
+        </button>
+        <button class="feature-item" data-feature="translate">
+          <span class="feature-icon">🌍</span>
+          <span>多语言翻译</span>
+        </button>
+        <button class="feature-item" data-feature="summarize">
+          <span class="feature-icon">📝</span>
+          <span>长文摘要</span>
+        </button>
+        <button class="feature-item" data-feature="reply">
+          <span class="feature-icon">💬</span>
+          <span>回复生成</span>
+        </button>
+        <button class="feature-item" data-feature="titles">
+          <span class="feature-icon">📌</span>
+          <span>标题备选</span>
+        </button>
+        <button class="feature-item" data-feature="sensitive">
+          <span class="feature-icon">⚠️</span>
+          <span>敏感词检测</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="popup-footer">
+      <button class="footer-btn" id="settings-link">
+        ⚙️ 设置
+      </button>
+      <button class="footer-btn" id="history-link">
+        🕐 历史
+      </button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
