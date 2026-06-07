@@ -1202,15 +1202,22 @@ function renderAuditRecords(records) {
     return;
   }
   
-  list.innerHTML = records.map(record => `
-    <div class="audit-item">
+  list.innerHTML = records.map((record, index) => `
+    <div class="audit-item" data-index="${index}">
       <div class="audit-item-header">
         <span class="audit-item-type">${escapeHtml(record.type || '内容审核')}</span>
         <span class="audit-item-status ${record.status || 'pass'}">
           ${record.status === 'warning' ? '需关注' : '通过'}
         </span>
       </div>
-      <div class="audit-item-content">${escapeHtml(record.content?.substring(0, 100) || '')}</div>
+      <div class="audit-item-content">
+        <span class="audit-item-label">原文摘要：</span>
+        ${escapeHtml(record.content?.substring(0, 100) || '')}${(record.content?.length || 0) > 100 ? '...' : ''}
+      </div>
+      <div class="audit-item-result">
+        <span class="audit-item-label">检测结果：</span>
+        <div class="audit-result-text">${escapeHtml(record.result || '').replace(/\n/g, '<br>')}</div>
+      </div>
       <div class="audit-item-time">${formatTime(record.timestamp)}</div>
     </div>
   `).join('');
@@ -1363,6 +1370,36 @@ function addResultSource(title, url) {
   }
 }
 
+function analyzeSensitiveResult(result) {
+  const lowerResult = result.toLowerCase();
+  
+  const passPatterns = [
+    '未发现', '未检出', '整体合规', '内容合规', '正常使用',
+    '没有敏感', '无敏感', '安全', '通过', '合规', '无违规',
+    '未包含', '未发现明显', '未检测到'
+  ];
+  
+  const warningPatterns = [
+    '存在违规', '包含敏感', '敏感词', '需要修改', '需修改',
+    '风险较高', '高风险', '中风险', '存在风险', '违规内容',
+    '建议修改', '需关注', '警告', '不符合', '不通过'
+  ];
+  
+  for (const pattern of passPatterns) {
+    if (lowerResult.includes(pattern.toLowerCase())) {
+      return 'pass';
+    }
+  }
+  
+  for (const pattern of warningPatterns) {
+    if (lowerResult.includes(pattern.toLowerCase())) {
+      return 'warning';
+    }
+  }
+  
+  return 'pass';
+}
+
 function saveToHistory(action, originalText, result) {
   chrome.storage.local.get(['history', 'settings'], (data) => {
     const settings = data.settings || {};
@@ -1390,13 +1427,7 @@ function saveToHistory(action, originalText, result) {
 }
 
 function saveAuditRecord(action, originalText, result) {
-  const isWarning = result.includes('违规') || 
-                     result.includes('敏感') || 
-                     result.includes('风险') ||
-                     result.includes('需关注') ||
-                     result.includes('警告');
-  
-  const status = isWarning ? 'warning' : 'pass';
+  const status = analyzeSensitiveResult(result);
   
   const record = {
     id: Date.now().toString(),

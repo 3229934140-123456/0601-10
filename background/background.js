@@ -639,15 +639,32 @@ function generateBatchPrompt(action, item) {
 }
 
 function analyzeSensitiveResult(result) {
-  const lower = result.toLowerCase();
-  if (lower.includes('违规') || 
-      lower.includes('敏感') || 
-      lower.includes('风险') ||
-      lower.includes('需关注') ||
-      lower.includes('警告') ||
-      lower.includes('不通过')) {
-    return 'warning';
+  const lowerResult = result.toLowerCase();
+  
+  const passPatterns = [
+    '未发现', '未检出', '整体合规', '内容合规', '正常使用',
+    '没有敏感', '无敏感', '安全', '通过', '合规', '无违规',
+    '未包含', '未发现明显', '未检测到'
+  ];
+  
+  const warningPatterns = [
+    '存在违规', '包含敏感', '敏感词', '需要修改', '需修改',
+    '风险较高', '高风险', '中风险', '存在风险', '违规内容',
+    '建议修改', '需关注', '警告', '不符合', '不通过'
+  ];
+  
+  for (const pattern of passPatterns) {
+    if (lowerResult.includes(pattern.toLowerCase())) {
+      return 'pass';
+    }
   }
+  
+  for (const pattern of warningPatterns) {
+    if (lowerResult.includes(pattern.toLowerCase())) {
+      return 'warning';
+    }
+  }
+  
   return 'pass';
 }
 
