@@ -214,6 +214,125 @@ body {
   line-height: 1.2;
 }
 
+.ocr-section {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.ocr-upload-area {
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 30px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 12px;
+}
+
+.ocr-upload-area:hover {
+  border-color: #667eea;
+  background: #f0f4ff;
+}
+
+.ocr-upload-area.dragover {
+  border-color: #667eea;
+  background: #eff6ff;
+}
+
+.ocr-upload-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.ocr-upload-text {
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.ocr-upload-hint {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.ocr-actions {
+  margin-bottom: 12px;
+}
+
+.ocr-preview {
+  position: relative;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.ocr-preview img {
+  width: 100%;
+  display: block;
+  max-height: 200px;
+  object-fit: contain;
+}
+
+.ocr-remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.ocr-remove-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.ocr-result {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.ocr-compare-area {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ocr-compare-area .compare-box {
+  background: #f9fafb;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.ocr-compare-area .compare-image {
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  background: white;
+}
+
+.ocr-compare-area .compare-divider {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
 .input-section {
   background: white;
   border-radius: 12px;
@@ -333,6 +452,37 @@ body {
 .result-actions {
   display: flex;
   gap: 6px;
+}
+
+.result-source-info {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.result-source-label {
+  color: #0369a1;
+  font-weight: 500;
+  margin-right: 6px;
+}
+
+.result-source-title {
+  color: #0c4a6e;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.result-source-link {
+  color: #0284c7;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.result-source-link:hover {
+  text-decoration: underline;
 }
 
 .result-content {
@@ -846,10 +996,61 @@ body {
 }
 
 .batch-result-item {
-  padding: 10px;
+  padding: 12px;
   background: #f9fafb;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #e5e7eb;
+  margin-bottom: 10px;
+}
+
+.batch-result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.batch-result-num {
+  background: #667eea;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.batch-result-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.batch-result-url {
+  font-size: 11px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.result-link {
+  color: #667eea;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.result-link:hover {
+  text-decoration: underline;
+}
+
+.batch-result-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #667eea;
+  margin-bottom: 4px;
 }
 
 .batch-result-original {
@@ -863,7 +1064,19 @@ body {
 .batch-result-text {
   font-size: 12px;
   color: #1f2937;
-  line-height: 1.5;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.batch-result-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
 }
 
 .tabs-list-header {

@@ -3,6 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   initQuickActions();
+  initOCR();
   initInputSection();
   initPromptLibrary();
   initSummary();
@@ -77,6 +78,11 @@ function initQuickActions() {
 }
 
 function handleQuickAction(action) {
+  if (action === 'ocr') {
+    showOCRSection();
+    return;
+  }
+  
   const textarea = document.getElementById('input-textarea');
   const text = textarea.value.trim();
   
@@ -86,6 +92,195 @@ function handleQuickAction(action) {
   }
   
   processAIAction(action, text);
+}
+
+let currentOCRImage = null;
+let currentOCRResult = null;
+
+function showOCRSection() {
+  document.getElementById('ocr-section').style.display = 'block';
+  document.getElementById('text-input-section').style.display = 'none';
+  document.getElementById('result-section').style.display = 'none';
+}
+
+function hideOCRSection() {
+  document.getElementById('ocr-section').style.display = 'none';
+  document.getElementById('text-input-section').style.display = 'block';
+}
+
+function initOCR() {
+  const uploadArea = document.getElementById('ocr-upload-area');
+  const fileInput = document.getElementById('ocr-file-input');
+  const startBtn = document.getElementById('ocr-start-btn');
+  const removeBtn = document.getElementById('ocr-remove-btn');
+  const captureBtn = document.getElementById('capture-page-btn');
+  const backBtn = document.getElementById('ocr-back-btn');
+  const copyBtn = document.getElementById('ocr-copy-btn');
+  const compareBtn = document.getElementById('ocr-compare-btn');
+  
+  uploadArea.addEventListener('click', () => fileInput.click());
+  
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) handleImageFile(file);
+  });
+  
+  uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+  });
+  
+  uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+  });
+  
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) handleImageFile(file);
+  });
+  
+  removeBtn.addEventListener('click', clearOCRImage);
+  
+  startBtn.addEventListener('click', startOCR);
+  
+  backBtn.addEventListener('click', hideOCRSection);
+  
+  copyBtn.addEventListener('click', () => {
+    if (currentOCRResult) {
+      copyToClipboard(currentOCRResult);
+    }
+  });
+  
+  compareBtn.addEventListener('click', toggleOCRCompare);
+  
+  captureBtn.addEventListener('click', captureVisiblePage);
+}
+
+function handleImageFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    currentOCRImage = e.target.result;
+    showOCRPreview(currentOCRImage);
+  };
+  reader.readAsDataURL(file);
+}
+
+function showOCRPreview(imageData) {
+  const preview = document.getElementById('ocr-preview');
+  const previewImg = document.getElementById('ocr-preview-img');
+  const startBtn = document.getElementById('ocr-start-btn');
+  const uploadArea = document.getElementById('ocr-upload-area');
+  
+  previewImg.src = imageData;
+  preview.style.display = 'block';
+  startBtn.disabled = false;
+  uploadArea.style.display = 'none';
+}
+
+function clearOCRImage() {
+  currentOCRImage = null;
+  currentOCRResult = null;
+  document.getElementById('ocr-preview').style.display = 'none';
+  document.getElementById('ocr-upload-area').style.display = 'block';
+  document.getElementById('ocr-start-btn').disabled = true;
+  document.getElementById('ocr-result').style.display = 'none';
+  document.getElementById('ocr-compare-area').style.display = 'none';
+}
+
+function startOCR() {
+  if (!currentOCRImage) {
+    showToast('请先选择或截取图片', 'error');
+    return;
+  }
+  
+  const startBtn = document.getElementById('ocr-start-btn');
+  startBtn.disabled = true;
+  startBtn.textContent = '识别中...';
+  
+  chrome.runtime.sendMessage(
+    { type: 'OCR_RECOGNIZE', imageData: currentOCRImage },
+    (response) => {
+      startBtn.disabled = false;
+      startBtn.textContent = '开始识别';
+      
+      if (response && response.success) {
+        currentOCRResult = response.result;
+        showOCRResult(response.result);
+        saveOCRHistory(currentOCRImage, response.result);
+      } else {
+        showToast('识别失败，请重试', 'error');
+      }
+    }
+  );
+}
+
+function showOCRResult(result) {
+  const resultSection = document.getElementById('ocr-result');
+  const resultContent = document.getElementById('ocr-result-content');
+  
+  resultContent.textContent = result;
+  resultSection.style.display = 'block';
+  resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function toggleOCRCompare() {
+  const compareArea = document.getElementById('ocr-compare-area');
+  const compareImg = document.getElementById('ocr-compare-img');
+  const compareText = document.getElementById('ocr-compare-text');
+  
+  if (compareArea.style.display === 'none') {
+    compareImg.src = currentOCRImage;
+    compareText.textContent = currentOCRResult;
+    compareArea.style.display = 'flex';
+  } else {
+    compareArea.style.display = 'none';
+  }
+}
+
+function captureVisiblePage() {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs[0];
+    if (!tab) {
+      showToast('无法获取当前标签页', 'error');
+      return;
+    }
+    
+    chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' }, (imageData) => {
+      if (chrome.runtime.lastError) {
+        showToast('截图失败：' + chrome.runtime.lastError.message, 'error');
+        return;
+      }
+      
+      currentOCRImage = imageData;
+      showOCRPreview(imageData);
+      showToast('截图成功，可以开始识别了');
+    });
+  });
+}
+
+function saveOCRHistory(imageData, result) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs[0];
+    const record = {
+      id: Date.now(),
+      type: 'ocr',
+      action: '截图识别',
+      imageData: imageData,
+      result: result,
+      sourceUrl: tab ? tab.url : '',
+      sourceTitle: tab ? tab.title : '截图识别',
+      timestamp: Date.now()
+    };
+    
+    chrome.storage.local.get({ history: [] }, (data) => {
+      const history = data.history || [];
+      history.unshift(record);
+      if (history.length > 100) history.pop();
+      chrome.storage.local.set({ history });
+    });
+  });
 }
 
 function initInputSection() {
@@ -153,7 +348,10 @@ function processAIAction(action, text) {
     if (response && response.success) {
       showResult(response.result, text);
       saveToHistory(action, text, response.result);
-      updateUsageStats();
+      
+      if (action === 'sensitive') {
+        saveAuditRecord(action, text, response.result);
+      }
     } else {
       showToast('处理失败，请稍后重试', 'error');
     }
@@ -609,7 +807,6 @@ function summarizeCurrentPage() {
           if (response && response.success) {
             showSummaryResult(response.result);
             saveToHistory('page_summary', pageContent.substring(0, 500), response.result);
-            updateUsageStats();
           } else {
             showToast('总结失败，请重试', 'error');
           }
@@ -676,6 +873,8 @@ function initBatch() {
   document.getElementById('select-all-tabs-btn').addEventListener('click', toggleSelectAllTabs);
   
   document.getElementById('start-tabs-batch-btn').addEventListener('click', startTabsBatch);
+  
+  document.getElementById('export-tabs-results-btn').addEventListener('click', exportTabsResults);
 }
 
 function startBatchProcess() {
@@ -805,43 +1004,171 @@ function startTabsBatch() {
   }
   
   const tabIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+  const total = tabIds.length;
   
-  showToast(`开始处理 ${tabIds.length} 个标签页...`);
+  const progressSection = document.getElementById('tabs-batch-progress');
+  const resultsSection = document.getElementById('tabs-batch-results');
+  const progressFill = document.getElementById('tabs-progress-fill');
+  const progressText = document.getElementById('tabs-progress-text');
+  
+  progressSection.style.display = 'block';
+  resultsSection.style.display = 'none';
+  progressFill.style.width = '0%';
+  progressText.textContent = `0 / ${total}`;
   
   const results = [];
   let completed = 0;
   
-  tabIds.forEach((tabId, index) => {
-    chrome.tabs.get(tabId, (tab) => {
-      if (tab) {
-        chrome.scripting.executeScript({
-          target: { tabId: tabId },
-          function: extractPageContentJS
-        }, (scriptResults) => {
-          const content = scriptResults && scriptResults[0] ? scriptResults[0].result : '';
-          const prompt = generatePrompt(action, content);
-          
-          chrome.runtime.sendMessage({
-            type: 'CALL_AI',
-            prompt
-          }, (response) => {
-            results.push({
-              title: tab.title,
-              url: tab.url,
-              result: response && response.success ? response.result : '处理失败'
-            });
-            
-            completed++;
-            if (completed === tabIds.length) {
-              saveToHistory('batch_tabs', `共${tabIds.length}个标签页`, 
-                results.map(r => `${r.title}\n${r.result}`).join('\n\n'));
-              showToast(`批量处理完成，共 ${results.length} 个`);
-            }
-          });
-        });
+  async function processNext(index) {
+    if (index >= tabIds.length) {
+      saveToHistory('batch_tabs', `共${total}个标签页批量处理`, 
+        results.map(r => `【${r.title}】\n${r.result}`).join('\n\n'));
+      
+      renderTabsBatchResults(results, action);
+      showToast(`批量处理完成，共 ${results.length} 个`);
+      return;
+    }
+    
+    const tabId = tabIds[index];
+    
+    try {
+      const tab = await getTabById(tabId);
+      const content = await extractTabContent(tabId);
+      const actionPrompt = generateTabsBatchPrompt(action, content);
+      
+      const response = await callAIPromise(actionPrompt);
+      
+      results.push({
+        index: index + 1,
+        title: tab.title,
+        url: tab.url,
+        result: response && response.success ? response.result : '处理失败',
+        status: 'completed'
+      });
+    } catch (err) {
+      results.push({
+        index: index + 1,
+        title: '未知页面',
+        url: '',
+        result: '处理失败: ' + err.message,
+        status: 'error'
+      });
+    }
+    
+    completed++;
+    progressFill.style.width = `${(completed / total) * 100}%`;
+    progressText.textContent = `${completed} / ${total}`;
+    
+    setTimeout(() => processNext(index + 1), 300);
+  }
+  
+  processNext(0);
+}
+
+function getTabById(tabId) {
+  return new Promise((resolve) => {
+    chrome.tabs.get(tabId, (tab) => resolve(tab));
+  });
+}
+
+function extractTabContent(tabId) {
+  return new Promise((resolve) => {
+    chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      function: extractPageContentJS
+    }, (results) => {
+      resolve(results && results[0] ? results[0].result : '');
+    });
+  });
+}
+
+function callAIPromise(prompt) {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({
+      type: 'CALL_AI',
+      prompt
+    }, (response) => {
+      resolve(response);
+    });
+  });
+}
+
+function generateTabsBatchPrompt(action, content) {
+  switch (action) {
+    case 'summary':
+      return `请为以下网页内容生成简洁的摘要，保留核心信息：\n\n${content}`;
+    case 'key_points':
+      return `请提取以下网页内容的核心要点，以编号列表形式呈现：\n\n${content}`;
+    default:
+      return content;
+  }
+}
+
+function renderTabsBatchResults(results, action) {
+  const section = document.getElementById('tabs-batch-results');
+  const list = document.getElementById('tabs-results-list');
+  
+  const actionName = action === 'summary' ? '摘要' : '要点';
+  
+  list.innerHTML = results.map(item => `
+    <div class="batch-result-item" data-index="${item.index}">
+      <div class="batch-result-header">
+        <span class="batch-result-num">#${item.index}</span>
+        <span class="batch-result-title" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</span>
+      </div>
+      <div class="batch-result-url">
+        <a href="${escapeHtml(item.url)}" target="_blank" class="result-link">${escapeHtml(item.url.substring(0, 50))}${item.url.length > 50 ? '...' : ''}</a>
+      </div>
+      <div class="batch-result-label">${actionName}：</div>
+      <div class="batch-result-text">${escapeHtml(item.result)}</div>
+      <div class="batch-result-actions">
+        <button class="text-sample-btn copy-tab-result" data-index="${item.index}">📋 复制</button>
+      </div>
+    </div>
+  `).join('');
+  
+  list.querySelectorAll('.copy-tab-result').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.target.dataset.index);
+      const item = results.find(r => r.index === index);
+      if (item) {
+        copyToClipboard(item.result);
       }
     });
   });
+  
+  section.style.display = 'block';
+  section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  
+  section.dataset.results = JSON.stringify(results);
+  section.dataset.action = action;
+}
+
+function exportTabsResults() {
+  const section = document.getElementById('tabs-batch-results');
+  const results = JSON.parse(section.dataset.results || '[]');
+  const action = section.dataset.action || 'summary';
+  const actionName = action === 'summary' ? '摘要' : '要点';
+  
+  if (results.length === 0) {
+    showToast('没有可导出的结果', 'error');
+    return;
+  }
+  
+  let text = `标签页批量${actionName}结果\n`;
+  text += `生成时间: ${new Date().toLocaleString('zh-CN')}\n`;
+  text += `共 ${results.length} 个页面\n\n`;
+  text += '='.repeat(50) + '\n\n';
+  
+  results.forEach(item => {
+    text += `【${item.index}. ${item.title}】\n`;
+    text += `链接: ${item.url}\n\n`;
+    text += `${item.result}\n\n`;
+    text += '-'.repeat(40) + '\n\n';
+  });
+  
+  downloadFile(text, `tabs-batch-${action}-${Date.now()}.txt`, 'text/plain');
+  showToast('导出成功');
 }
 
 function initAudit() {
@@ -980,14 +1307,60 @@ function renderHistory(history) {
 function viewHistoryItem(id) {
   chrome.storage.local.get(['history'], (result) => {
     const history = result.history || [];
-    const item = history.find(h => h.id === id);
+    const item = history.find(h => h.id == id);
     
-    if (item) {
-      document.querySelector('.nav-tab[data-tab="home"]').click();
+    if (!item) return;
+    
+    document.querySelector('.nav-tab[data-tab="home"]').click();
+    
+    if (item.type === 'ocr' || item.action === '截图识别') {
+      showOCRSection();
+      currentOCRImage = item.imageData || item.imageUrl;
+      currentOCRResult = item.result;
+      showOCRPreview(item.imageData || item.imageUrl);
+      showOCRResult(item.result);
+    } else {
+      hideOCRSection();
       document.getElementById('input-textarea').value = item.originalText || '';
       showResult(item.result, item.originalText || '');
+      
+      if (item.sourceUrl || item.sourceTitle) {
+        addResultSource(item.sourceTitle, item.sourceUrl);
+      }
     }
+    
+    showToast('已加载历史记录');
   });
+}
+
+function addResultSource(title, url) {
+  const resultSection = document.getElementById('result-section');
+  let sourceDiv = document.getElementById('result-source-info');
+  
+  if (!sourceDiv) {
+    sourceDiv = document.createElement('div');
+    sourceDiv.id = 'result-source-info';
+    sourceDiv.className = 'result-source-info';
+    
+    const titleEl = document.querySelector('#result-section .section-title');
+    if (titleEl && titleEl.parentNode) {
+      titleEl.parentNode.insertBefore(sourceDiv, titleEl.nextSibling);
+    }
+  }
+  
+  if (title || url) {
+    sourceDiv.style.display = 'block';
+    let html = '<span class="result-source-label">来源：</span>';
+    if (title) {
+      html += `<span class="result-source-title">${escapeHtml(title)}</span>`;
+    }
+    if (url) {
+      html += `<a href="${escapeHtml(url)}" target="_blank" class="result-source-link">${escapeHtml(url.substring(0, 60))}${url.length > 60 ? '...' : ''}</a>`;
+    }
+    sourceDiv.innerHTML = html;
+  } else {
+    sourceDiv.style.display = 'none';
+  }
 }
 
 function saveToHistory(action, originalText, result) {
@@ -995,21 +1368,57 @@ function saveToHistory(action, originalText, result) {
     const settings = data.settings || {};
     if (!settings.autoSaveHistory) return;
     
-    const history = data.history || [];
-    const historyItem = {
-      id: Date.now().toString(),
-      action: getActionName(action),
-      originalText,
-      result,
-      timestamp: new Date().toISOString(),
-      url: window.location.href
-    };
-    
-    history.unshift(historyItem);
-    if (history.length > 100) history.pop();
-    
-    chrome.storage.local.set({ history });
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs[0];
+      const history = data.history || [];
+      const historyItem = {
+        id: Date.now().toString(),
+        action: getActionName(action),
+        originalText,
+        result,
+        timestamp: new Date().toISOString(),
+        sourceUrl: tab ? tab.url : '',
+        sourceTitle: tab ? tab.title : ''
+      };
+      
+      history.unshift(historyItem);
+      if (history.length > 100) history.pop();
+      
+      chrome.storage.local.set({ history });
+    });
   });
+}
+
+function saveAuditRecord(action, originalText, result) {
+  const isWarning = result.includes('违规') || 
+                     result.includes('敏感') || 
+                     result.includes('风险') ||
+                     result.includes('需关注') ||
+                     result.includes('警告');
+  
+  const status = isWarning ? 'warning' : 'pass';
+  
+  const record = {
+    id: Date.now().toString(),
+    type: '敏感词检测',
+    content: originalText,
+    result: result,
+    status: status,
+    timestamp: new Date().toISOString(),
+    url: window.location.href
+  };
+  
+  chrome.storage.local.get(['auditRecords'], (data) => {
+    const records = data.auditRecords || [];
+    records.unshift(record);
+    if (records.length > 500) records.pop();
+    
+    chrome.storage.local.set({ auditRecords: records }, () => {
+      chrome.runtime.sendMessage({ type: 'NEW_AUDIT_RECORD', record });
+    });
+  });
+  
+  return record;
 }
 
 function getActionName(action) {
@@ -1189,30 +1598,8 @@ function loadUsageStats() {
   });
 }
 
-function updateUsageStats() {
-  chrome.storage.local.get(['usageStats'], (result) => {
-    const stats = result.usageStats || {};
-    const today = new Date().toDateString();
-    const thisMonth = new Date().toISOString().slice(0, 7);
-    
-    if (stats.lastResetDate !== today) {
-      stats.todayCalls = 0;
-      stats.lastResetDate = today;
-    }
-    
-    if (stats.lastMonthReset !== thisMonth) {
-      stats.monthlyCalls = 0;
-      stats.lastMonthReset = thisMonth;
-    }
-    
-    stats.totalCalls = (stats.totalCalls || 0) + 1;
-    stats.todayCalls = (stats.todayCalls || 0) + 1;
-    stats.monthlyCalls = (stats.monthlyCalls || 0) + 1;
-    
-    chrome.storage.local.set({ usageStats: stats }, () => {
-      loadUsageStats();
-    });
-  });
+function refreshUsageDisplay() {
+  loadUsageStats();
 }
 
 function initMessageListener() {
@@ -1249,6 +1636,17 @@ function initMessageListener() {
       }
     } else if (message.type === 'NEW_AUDIT_RECORD') {
       loadAuditRecords();
+    } else if (message.type === 'OCR_RESULT_FROM_MENU') {
+      switchTab('home');
+      showOCRSection();
+      
+      currentOCRImage = message.imageUrl;
+      currentOCRResult = message.result;
+      
+      showOCRPreview(message.imageUrl);
+      showOCRResult(message.result);
+      
+      loadHistory();
     }
   });
 }

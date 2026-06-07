@@ -98,7 +98,55 @@
           </div>
         </div>
 
-        <div class="input-section">
+        <div class="ocr-section" id="ocr-section" style="display:none;">
+          <h3 class="section-title">
+            <span>📷 图片识别</span>
+            <button class="text-sample-btn" id="ocr-back-btn">← 返回文本</button>
+          </h3>
+          
+          <div class="ocr-upload-area" id="ocr-upload-area">
+            <div class="ocr-upload-icon">📁</div>
+            <p class="ocr-upload-text">点击或拖拽图片到此处上传</p>
+            <p class="ocr-upload-hint">支持 JPG、PNG、GIF 等格式</p>
+            <input type="file" id="ocr-file-input" accept="image/*" style="display:none;">
+          </div>
+          
+          <div class="ocr-actions">
+            <button class="btn btn-secondary btn-block" id="capture-page-btn">📸 截取当前可见区域</button>
+          </div>
+          
+          <div class="ocr-preview" id="ocr-preview" style="display:none;">
+            <img id="ocr-preview-img" alt="预览图">
+            <button class="ocr-remove-btn" id="ocr-remove-btn">×</button>
+          </div>
+          
+          <button class="btn btn-primary btn-block" id="ocr-start-btn" disabled>开始识别</button>
+          
+          <div class="ocr-result" id="ocr-result" style="display:none;">
+            <div class="result-header">
+              <h4>识别结果</h4>
+              <div class="result-actions">
+                <button class="text-sample-btn" id="ocr-copy-btn">📋 复制</button>
+                <button class="text-sample-btn" id="ocr-compare-btn">📊 对比</button>
+              </div>
+            </div>
+            <div class="result-content" id="ocr-result-content"></div>
+            
+            <div class="ocr-compare-area" id="ocr-compare-area" style="display:none;">
+              <div class="compare-box">
+                <div class="compare-label">原图</div>
+                <img class="compare-image" id="ocr-compare-img" alt="原图">
+              </div>
+              <div class="compare-divider">↓</div>
+              <div class="compare-box">
+                <div class="compare-label">识别文字</div>
+                <div class="compare-text" id="ocr-compare-text"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-section" id="text-input-section">
           <h3 class="section-title">
             <span>输入文本</span>
             <button class="text-sample-btn" id="paste-btn">📋 粘贴</button>
@@ -323,6 +371,21 @@
           </div>
 
           <button class="btn btn-primary btn-block" id="start-tabs-batch-btn">批量处理选中标签页</button>
+
+          <div class="batch-progress" id="tabs-batch-progress" style="display:none;">
+            <div class="progress-bar">
+              <div class="progress-fill" id="tabs-progress-fill"></div>
+            </div>
+            <div class="progress-text" id="tabs-progress-text">0 / 0</div>
+          </div>
+
+          <div class="batch-results" id="tabs-batch-results" style="display:none;">
+            <div class="result-header">
+              <h4>处理结果</h4>
+              <button class="text-sample-btn" id="export-tabs-results-btn">📥 导出全部</button>
+            </div>
+            <div class="batch-results-list" id="tabs-results-list"></div>
+          </div>
         </div>
       </section>
 

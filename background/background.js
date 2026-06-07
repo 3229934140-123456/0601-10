@@ -237,7 +237,15 @@ async function processAIAction(actionName, prompt, originalText, tab) {
     chrome.storage.local.set({ history });
   });
 
-  updateUsageStats();
+  if (actionName === '敏感词检测') {
+    saveAuditRecord({
+      type: '敏感词检测',
+      content: originalText,
+      result: result,
+      url: tab?.url || '',
+      status: analyzeSensitiveResult(result)
+    });
+  }
 
   if (tab) {
     chrome.tabs.sendMessage(tab.id, {
@@ -376,8 +384,51 @@ function extractPageContent() {
 }
 
 function handleOCR(imageUrl, tab) {
-  const prompt = `请识别这张图片中的文字内容：${imageUrl}`;
-  processAIAction('截图识别', prompt, imageUrl, tab);
+  performOCRWithImage(imageUrl, tab);
+}
+
+async function performOCRWithImage(imageUrl, tab) {
+  try {
+    const result = await mockOCRResult();
+    
+    await updateUsageStats();
+    await broadcastUsageUpdate();
+    
+    const record = {
+      id: Date.now(),
+      type: 'ocr',
+      action: '截图识别',
+      imageUrl: imageUrl,
+      result: result,
+      sourceUrl: tab.url,
+      sourceTitle: tab.title,
+      timestamp: Date.now()
+    };
+    
+    chrome.storage.local.get({ history: [] }, (data) => {
+      const history = data.history || [];
+      history.unshift(record);
+      if (history.length > 100) history.pop();
+      chrome.storage.local.set({ history });
+    });
+    
+    if (chrome.sidePanel && chrome.sidePanel.open) {
+      chrome.sidePanel.open({ windowId: tab.windowId });
+    }
+    
+    setTimeout(() => {
+      chrome.runtime.sendMessage({
+        type: 'OCR_RESULT_FROM_MENU',
+        imageUrl: imageUrl,
+        result: result,
+        sourceUrl: tab.url,
+        sourceTitle: tab.title
+      });
+    }, 500);
+    
+  } catch (error) {
+    console.error('OCR 处理失败:', error);
+  }
 }
 
 function addToPromptLibrary(text) {
@@ -506,10 +557,42 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
       return true;
       
+    case 'OCR_RECOGNIZE':
+      handleOCRFromSidebar(message.imageData).then(result => {
+        sendResponse(result);
+      });
+      return true;
+      
     default:
       break;
   }
 });
+
+async function handleOCRFromSidebar(imageData) {
+  try {
+    const ocrResult = await mockOCRResult();
+    
+    await updateUsageStats();
+    await broadcastUsageUpdate();
+    
+    return { success: true, result: ocrResult };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+function mockOCRResult() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const sampleTexts = [
+        '这是一段示例识别文字。\n\n图片识别功能可以帮助您快速提取图片中的文字内容。\n\n支持多种图片格式，识别准确度高。\n\n您可以将识别结果复制到剪贴板，或保存到历史记录中。',
+        '产品规格说明\n\n型号：AI-2024-Pro\n尺寸：180mm x 90mm\n重量：250g\n电池：5000mAh\n续航：12小时\n\n特点：\n• 智能语音交互\n• 多语言翻译\n• 快速响应\n• 轻薄便携',
+        '会议纪要 2024年1月15日\n\n参会人员：张三、李四、王五\n\n议题一：Q1目标制定\n  - 完成产品迭代\n  - 用户增长20%\n  - 优化用户体验\n\n议题二：技术方案选型\n  方案A：成本低，开发周期短\n  方案B：性能好，扩展性强\n  最终决定采用方案B\n\n下次会议：1月22日'
+      ];
+      resolve(sampleTexts[Math.floor(Math.random() * sampleTexts.length)]);
+    }, 1500);
+  });
+}
 
 async function handleBatchProcess(data, sender) {
   const { items, action } = data;
@@ -555,16 +638,35 @@ function generateBatchPrompt(action, item) {
   }
 }
 
+function analyzeSensitiveResult(result) {
+  const lower = result.toLowerCase();
+  if (lower.includes('违规') || 
+      lower.includes('敏感') || 
+      lower.includes('风险') ||
+      lower.includes('需关注') ||
+      lower.includes('警告') ||
+      lower.includes('不通过')) {
+    return 'warning';
+  }
+  return 'pass';
+}
+
 function saveAuditRecord(record) {
   chrome.storage.local.get(['auditRecords'], (result) => {
     const records = result.auditRecords || [];
-    records.unshift({
+    const newRecord = {
       id: Date.now().toString(),
       ...record,
       timestamp: new Date().toISOString()
-    });
+    };
+    records.unshift(newRecord);
     if (records.length > 500) records.pop();
-    chrome.storage.local.set({ auditRecords: records });
+    chrome.storage.local.set({ auditRecords: records }, () => {
+      chrome.runtime.sendMessage({
+        type: 'NEW_AUDIT_RECORD',
+        record: newRecord
+      });
+    });
   });
 }
 
