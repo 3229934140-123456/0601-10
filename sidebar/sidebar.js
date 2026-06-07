@@ -1220,6 +1220,12 @@ function initMessageListener() {
     if (message.type === 'NEW_RESULT') {
       loadUsageStats();
       loadHistory();
+    } else if (message.type === 'USAGE_UPDATED') {
+      loadUsageStats();
+      const settingsTab = document.getElementById('tab-settings');
+      if (settingsTab && settingsTab.style.display !== 'none') {
+        loadSettings();
+      }
     } else if (message.type === 'SWITCH_TAB') {
       switchTab(message.tab);
     } else if (message.type === 'SET_FEATURE') {
@@ -1241,6 +1247,8 @@ function initMessageListener() {
           actionSelect.value = featureMap[message.feature];
         }
       }
+    } else if (message.type === 'NEW_AUDIT_RECORD') {
+      loadAuditRecords();
     }
   });
 }

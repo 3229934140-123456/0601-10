@@ -262,31 +262,47 @@ async function processAIAction(actionName, prompt, originalText, tab) {
 async function callAI(prompt) {
   const { settings } = await chrome.storage.local.get('settings');
   
+  let result;
+  
   if (!settings?.apiKey) {
-    return mockAIResponse(prompt);
-  }
+    result = mockAIResponse(prompt);
+  } else {
+    try {
+      const response = await fetch(settings.apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${settings.apiKey}`
+        },
+        body: JSON.stringify({
+          model: settings.model,
+          messages: [{ role: 'user', content: prompt }],
+          temperature: settings.temperature,
+          max_tokens: settings.maxTokens
+        })
+      });
 
-  try {
-    const response = await fetch(settings.apiEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${settings.apiKey}`
-      },
-      body: JSON.stringify({
-        model: settings.model,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: settings.temperature,
-        max_tokens: settings.maxTokens
-      })
+      const data = await response.json();
+      result = data.choices?.[0]?.message?.content || '无返回结果';
+    } catch (error) {
+      console.error('AI调用失败:', error);
+      result = `调用失败: ${error.message}\n\n当前为演示模式，以下是模拟结果:\n\n` + mockAIResponse(prompt);
+    }
+  }
+  
+  updateUsageStats();
+  broadcastUsageUpdate();
+  
+  return result;
+}
+
+function broadcastUsageUpdate() {
+  chrome.storage.local.get(['usageStats'], (result) => {
+    chrome.runtime.sendMessage({
+      type: 'USAGE_UPDATED',
+      stats: result.usageStats || {}
     });
-
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || '无返回结果';
-  } catch (error) {
-    console.error('AI调用失败:', error);
-    return `调用失败: ${error.message}\n\n当前为演示模式，以下是模拟结果:\n\n` + mockAIResponse(prompt);
-  }
+  });
 }
 
 function mockAIResponse(prompt) {

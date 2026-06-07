@@ -3,7 +3,6 @@
   "name": "AI 智能助手 - 客服运营内容编辑工具",
   "version": "1.0.0",
   "description": "为客服、运营和内容编辑人员打造的AI智能助手，提供文本改写、摘要、翻译、批处理等多功能",
-  "default_locale": "zh_CN",
   "permissions": [
     "activeTab",
     "storage",
